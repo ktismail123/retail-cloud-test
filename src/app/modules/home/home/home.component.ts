@@ -1,11 +1,23 @@
-import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  standalone: true,
-  styleUrls: ['./home.component.scss']
+  styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent {
 
+  constructor(private router: Router) {}
+
+  navigateToAuthorList() {
+    this.router.navigate(['/data-table']);
+  }
+
+  navigateToImageGallery() {
+    this.router.navigate(['/image-gallery']);
+  }
+ 
 }

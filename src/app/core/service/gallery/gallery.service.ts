@@ -5,25 +5,25 @@ import { IApiRes } from '../../models/interfaces/api';
 import { MasterService } from '../master/master.service';
 
 /**
- * Service for handling data table operations.
+ * Service for handling gallery operations.
  */
 @Injectable({
   providedIn: 'root',
 })
-export class DataTableService {
+export class GalleryService {
   /** Injected instance of MasterService. */
   private masterService = inject(MasterService);
 
-  /** Base URL for the data table API. */
+  /** Base URL for the gallery API. */
   BASE_URL = environment.BASE_URL;
 
   /**
-   * Retrieves table data from the API with pagination.
+   * Retrieves images from the gallery API with pagination.
    * @param page The page number for pagination.
    * @param limit The number of items to fetch per page.
    * @returns An observable of the API response array.
    */
-  getTableData(page: number, limit: number): Observable<IApiRes[]> {
+  getImages(page: number, limit: number): Observable<IApiRes[]> {
     return this.masterService.get(this.BASE_URL, page, limit);
   }
 }

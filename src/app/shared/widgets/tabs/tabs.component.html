@@ -1,0 +1,24 @@
+<div class="main-container">
+    <div class="main-heading">
+      <h1>Report Data</h1>
+    </div>
+  
+    <div class="select-tabs" [class]="{ 'border-bottom': selectedTab === 'data-table' }">
+      <div
+        class="tab grid-tab"
+        [class]="{ 'selected-tab': selectedTab === 'data-table' }"
+        (click)="tabSelect('data-table')"
+      >
+        <span>Grid</span>
+      </div>
+      <div
+        class="tab gallery-tab"
+        [class]="{ 'selected-tab': selectedTab === 'image-gallery' }"
+        (click)="tabSelect('image-gallery')"
+      >
+        <span>Gallery</span>
+      </div>
+    </div>
+  </div>
+  
+  

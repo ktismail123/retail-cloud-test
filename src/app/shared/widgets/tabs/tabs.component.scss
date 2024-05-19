@@ -1,6 +1,5 @@
 .main-container{
-    padding: 30px 50px;
-
+    padding: 30px 50px 0px;
 
     .main-heading{
         h1{
@@ -14,7 +13,7 @@
         font-weight: 400;
         cursor: default;
         font-size: 15px;
-        border-bottom: 1px solid #e1e1e1;
+        // border-bottom: 1px solid #e1e1e1;
 
         .tab{
             padding: 10px 15px;
@@ -26,9 +25,12 @@
             color: blue;
             font-weight: 400;
             border-bottom: 2px solid;
-           
         }
     }
 
+}
+
+.border-bottom{
+    border-bottom: 1px solid #e1e1e1;
 }
 

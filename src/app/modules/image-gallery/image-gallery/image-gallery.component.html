@@ -1,1 +1,23 @@
-<p>image-gallery works!</p>
+<app-tabs></app-tabs>
+<div class="main-container">
+
+  <span *ngIf="loader" class="loader"></span>
+
+  <div *ngIf="!loader" class="image-gallery">
+    <div class="card-item" *ngFor="let item of imagesList;">
+      <a >
+        <img
+          [src]="item.download_url" 
+          alt="img" width="350" height="230"
+        />
+      </a>
+
+      <div class="card-label">{{item.author}}</div>
+
+      <div class="card-description">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc quam urna.
+      </div>
+    </div>
+   
+  </div>
+</div>

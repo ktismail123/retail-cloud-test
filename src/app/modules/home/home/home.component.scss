@@ -1,0 +1,68 @@
+// Define variables for common values
+$padding: 20px;
+$margin: 20px 0;
+$auto: auto;
+$white: #fff;
+$font-size: 16px;
+$border-color: #ccc;
+
+body {
+  padding: 0;
+  margin: 0;
+}
+
+.main {
+  background-image: url('https://images.pexels.com/photos/1072179/pexels-photo-1072179.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+  background-size: cover; // Ensure the image covers the whole area
+  background-position: center; // Center the image
+  padding: $padding;
+  color: $white;
+  
+  header {
+    text-align: center;
+    margin: $margin;
+  }
+  
+  section {
+    margin: $margin;
+    padding: 0 $padding;
+    
+    h2 {
+      margin-top: 0;
+    }
+    
+    ul {
+      list-style-type: none;
+      padding: 0;
+      
+      li {
+        margin: 5px 0;
+      }
+    }
+  }
+  
+  button {
+    display: block;
+    margin: $margin $auto;
+    padding: 10px $padding;
+    font-size: $font-size;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    ;
+  }
+
+  .buttons{
+    display: flex;
+    justify-content: center;
+    gap: 10px
+  }
+  
+  footer {
+    text-align: center;
+    margin-top: 40px;
+    padding: 20px 0;
+    border-top: 1px solid $border-color;
+  }
+}

@@ -1,1 +1,30 @@
-<p>data-table works!</p>
+<app-tabs></app-tabs>
+<div class="main-container">
+  <div class="container">
+    <ag-grid-angular
+      class="ag-theme-quartz"
+      style="width: 100%; height: 90vh"
+      [columnDefs]="colDefs"
+      [pagination]="true"
+      [sideBar]="sideBar"
+      [paginationPageSize]="paginationPageSize"
+      [cacheBlockSize]="paginationPageSize"
+      [gridOptions]="gridOptions"
+      [paginationPageSizeSelector]="false"
+      (gridReady)="onGridReady($event)"
+    >
+    </ag-grid-angular>
+    <div class="pagination-section">
+      <div class="page-size">
+        <div class="page-size-section">
+          <span class="label"> Showing </span>
+          <select name="page" id="page" (change)="onPageSizeChanged($event)">
+            <option *ngFor="let item of options" [value]="item">{{item}}</option>
+          </select>
+          <span class="label"> entries </span>
+        </div>
+      </div>
+   
+    </div>
+  </div>
+</div>

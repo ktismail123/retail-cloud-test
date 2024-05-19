@@ -1,1 +1,55 @@
-<p>home works!</p>
+<div class="main">
+  <header>
+    <h1>Welcome to Image Gallery</h1>
+    <p>Your one-stop solution for browsing and viewing beautiful images</p>
+  </header>
+
+  <section>
+    <h2>Introduction</h2>
+    <p>
+      Image Gallery is a simple web application that allows you to browse
+      through a collection of images provided by an external API. You can view
+      author names and their images in a list format, and explore a gallery of
+      images.
+    </p>
+  </section>
+
+  <section>
+    <h2>Key Features</h2>
+    <ul>
+      <li>Responsive and visually appealing UI</li>
+      <li>Author names and image thumbnails in an ag-grid</li>
+      <li>Image gallery with lazy loading</li>
+      <li>Search functionality for filtering data in the ag-grid</li>
+      <li>
+        Pagination support in the ag-grid for navigating through different pages
+        of images
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Getting Started</h2>
+    <p>
+      To begin exploring the images, use the navigation tabs at the top of the
+      page:
+    </p>
+    <ul>
+      <li>
+        <strong>Author Image Listing</strong>: View a list of authors and their
+        images in a tabular format.
+      </li>
+      <li><strong>Image Gallery</strong>: Show gallery of images.</li>
+    </ul>
+    <div class="buttons">
+      <button (click)="navigateToAuthorList()">
+        Go to Author Image Listing
+      </button>
+      <button (click)="navigateToImageGallery()">Go to Image Gallery</button>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; _kt_!$|\/|@!| 2024 Image Gallery. All rights reserved.</p>
+  </footer>
+</div>
