@@ -18,8 +18,8 @@
       <div class="page-size">
         <div class="page-size-section">
           <span class="label"> Showing </span>
-          <select name="page" id="page" (change)="onPageSizeChanged($event)">
-            <option *ngFor="let item of options" [value]="item">{{item}}</option>
+          <select name="page" id="page" [(ngModel)]="paginationPageSize" (change)="onPageSizeChanged($event)">
+            <option *ngFor="let item of options"   [value]="item">{{item}}</option>
           </select>
           <span class="label"> entries </span>
         </div>

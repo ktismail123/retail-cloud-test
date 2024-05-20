@@ -104,32 +104,34 @@ export class DataTableComponent implements OnDestroy {
     const dataSource: IServerSideDatasource = {
       getRows: (getRowParams) => {
         this.gridApi.showLoadingOverlay();
-        this.dataTableService
-          .getTableData(
-            this.gridApi.paginationGetCurrentPage() + 1,
-            this.gridApi.paginationGetPageSize()
-          )
-          .pipe(
-            map((val) => {
-              if (val.length === 0) {
-                params.api.showNoRowsOverlay();
-              } else {
-                params.api.hideOverlay();
-              }
+        this.subscription.push(
+          this.dataTableService
+            .getTableData(
+              this.gridApi.paginationGetCurrentPage() + 1,
+              this.gridApi.paginationGetPageSize()
+            )
+            .pipe(
+              map((val) => {
+                if (val.length === 0) {
+                  params.api.showNoRowsOverlay();
+                } else {
+                  params.api.hideOverlay();
+                }
 
-              return val;
+                return val;
+              })
+            )
+            .subscribe({
+              next: (res) => {
+                // const filteredData = this.filterDataByAuthor(
+                //   res,
+                //   getRowParams.request.filterModel?.['author']?.filter
+                // ); Call filtering function
+
+                this.updateRows(getRowParams, res); // Update grid with filtered data
+              },
             })
-          )
-          .subscribe({
-            next: (res) => {
-              // const filteredData = this.filterDataByAuthor(
-              //   res,
-              //   getRowParams.request.filterModel?.['author']?.filter
-              // ); Call filtering function
-
-              this.updateRows(getRowParams, res); // Update grid with filtered data
-            },
-          });
+        );
       },
     };
     params.api.setGridOption('serverSideDatasource', dataSource);
