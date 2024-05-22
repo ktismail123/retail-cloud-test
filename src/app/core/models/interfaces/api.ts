@@ -3,7 +3,7 @@
  */
 export interface IApiRes {
   /** Unique identifier for the resource. */
-  id: string;
+  id: string | number;
   /** Author of the resource. */
   author: string;
   /** Width of the resource. */
