@@ -1,24 +1,19 @@
 .main-container{
     padding: 0px 50px;
-
-    .container{
-        position: relative;
-    }
     
     .pagination-section{
         display: flex;
         justify-content: space-between;
+        border-top: 1px  solid #e1e1e1;
 
         .page-size{
             padding: 15px;
 
             .page-size-section{
-                position: absolute;
                 border: 1px solid #e1e1e1;
                 padding: 5px 20px;
                 border-radius: 5px;
-                bottom: 40px;
-                left: -10px;
+                width: fit-content;
             }
 
             select{
@@ -30,12 +25,52 @@
                 font-size: 14px;
             }
         }
+
+
+        .custom-pagination{
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            padding-right: 25px;
+            width: fit-content;
+
+            .page-count{
+                display: flex;
+                width: 101px;
+                justify-content: center;
+                align-items: center;
+                gap: 5px;
+                font-size: 14px;
+            }
+
+            .buttons{
+                display: flex;
+                width: 190px;
+                justify-content: center;
+                align-items: center;
+                gap: 25px;
+                font-size: 14px;
+
+                img{
+                    width: 20px;
+                    height: 16px;
+                    margin-top: 4px;
+                    // cursor: pointer;
+                }
+            }
+
+        }
+
     }
 }
 
   /* Media query for screens less than 530px wide */
-  @media screen and (max-width: 625px) {
-    .page-size-section{
-        bottom: 5px !important;
+  @media screen and (max-width: 660px) {
+    .pagination-section{
+        display: block !important;
+    }
+    
+    .page-size-section, .custom-pagination{
+        margin: auto;
     }
   }

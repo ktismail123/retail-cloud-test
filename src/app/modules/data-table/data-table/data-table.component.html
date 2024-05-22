@@ -9,22 +9,69 @@
       [sideBar]="sideBar"
       [paginationPageSize]="paginationPageSize"
       [cacheBlockSize]="paginationPageSize"
-      [gridOptions]="gridOptions"
       [paginationPageSizeSelector]="false"
       (gridReady)="onGridReady($event)"
+      [gridOptions]="gridOptions"
+      [suppressPaginationPanel]="true"
     >
     </ag-grid-angular>
+
     <div class="pagination-section">
       <div class="page-size">
         <div class="page-size-section">
           <span class="label"> Showing </span>
-          <select name="page" id="page" [(ngModel)]="paginationPageSize" (change)="onPageSizeChanged($event)">
-            <option *ngFor="let item of options"   [value]="item">{{item}}</option>
+          <select
+            name="page"
+            id="page"
+            (change)="onPageSizeChanged($event)"
+            [(ngModel)]="paginationPageSize"
+          >
+            <option *ngFor="let item of options" [value]="item">
+              {{ item }}
+            </option>
           </select>
           <span class="label"> entries </span>
         </div>
       </div>
-   
+
+      <div class="custom-pagination">
+        <div class="page-count">
+          <span>{{ startItemIndex }}</span>
+          <span>to</span>
+          <span>{{ endItemIndex }}</span>
+          <span>of</span>
+          <span>{{ totalDataCount }}</span>
+        </div>
+        <div class="buttons">
+          <div>
+            <span
+              [ngStyle]="{
+                opacity: isPreviousPageDisabled() ? '0.7' : '1',
+                cursor: isPreviousPageDisabled() ? 'not-allowed' : 'pointer'
+              }"
+              ><img
+                (click)="onPreviousPage()"
+                src="../../../../assets/left-angle.svg"
+                alt=""
+            /></span>
+          </div>
+          <div>Page {{ currentPage }} of {{ totalPages }}</div>
+          <div>
+            <span
+              [ngStyle]="{
+                opacity: isNextPageDisabled() ? '0.7' : '1',
+                cursor: isNextPageDisabled() ? 'not-allowed' : 'pointer'
+              }"
+            >
+              <img
+                (click)="onNextPage()"
+                src="../../../../assets/right-angle.svg"
+                alt=""
+              />
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

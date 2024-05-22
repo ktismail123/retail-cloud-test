@@ -1,19 +1,14 @@
-import { Component, inject, OnDestroy } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
-  ColDef,
-  GridReadyEvent,
-  IServerSideDatasource,
-  IServerSideGetRowsParams,
   GridApi,
   GridOptions,
-} from 'ag-grid-community';
-import { map, Subscription } from 'rxjs';
+  GridReadyEvent,
+  SideBarDef,
+} from 'ag-grid-enterprise';
+import { finalize, Subscription } from 'rxjs';
 import { DataTableService } from 'src/app/core/service/data-table/data-table.service';
-
+import { ImageRenderer } from '../data-table/dt-image-renderer.component';
 import 'ag-grid-enterprise';
-import { SideBarDef } from 'ag-grid-enterprise';
-import { ImageRenderer } from './dt-image-renderer.component';
-import { IApiRes } from 'src/app/core/models/interfaces/api';
 
 /**
  * Component for displaying a data table using ag-Grid.
@@ -23,35 +18,47 @@ import { IApiRes } from 'src/app/core/models/interfaces/api';
   templateUrl: './data-table.component.html',
   styleUrls: ['./data-table.component.scss'],
 })
-export class DataTableComponent implements OnDestroy {
-  /** List of subscriptions to handle cleanup. */
+export class DataTableComponent {
+  /** Subscriptions to handle observable streams. */
   subscription: Subscription[] = [];
 
-  /** Loading indicator. */
-  loading = false;
-
-  /** Total count of rows, assumed to be 100 for now. */
-  totalCount = 100;
-
-  /** Pagination options. */
-  options = [10, 20, 30, 40, 50];
-
-  /** Grid event parameters. */
+  /** Grid parameters. */
   params?: GridReadyEvent;
 
-  /** Rows per page. */
-  limit = 30;
-
   /** Current page number. */
-  currentPage = 1;
+  currentPage: number = 1;
 
-  /** Page size for pagination. */
+  /** Number of rows per page. */
   paginationPageSize: number = 30;
 
-  /** Service for handling data table operations. */
+  /** Total number of data items. */
+  totalDataCount: number = 100; // Assume total data count is 100
+
+  /** Total number of pages. */
+  totalPages = 0;
+
+  /** Index of the first item on the current page. */
+  startItemIndex: number = 0;
+
+  /** Index of the last item on the current page. */
+  endItemIndex: number = 0;
+
+  /** Loading state indicator. */
+  loading: boolean = false;
+
+  /** Total count of items in the data table. */
+  totalCount: number = 100;
+
+  /** Options for pagination size. */
+  options: number[] = [10, 20, 30];
+
+  /** Limit of items per page. */
+  limit: number = 30;
+
+  /** Injected DataTableService. */
   private dataTableService = inject(DataTableService);
 
-  /** Definition of the sidebar for the grid. */
+  /** Sidebar configuration for ag-Grid. */
   public sideBar: SideBarDef | string | string[] | boolean | null = {
     toolPanels: [
       {
@@ -72,14 +79,26 @@ export class DataTableComponent implements OnDestroy {
     defaultToolPanel: 'columns',
   };
 
+  /** Grid API. */
+  gridApi!: GridApi;
+
+  /**
+   * Angular lifecycle hook that is called when the component is initialized.
+   */
+  ngOnInit(): void {
+    this.totalPages = Math.ceil(this.totalDataCount / this.paginationPageSize);
+  }
+
   /** Grid options configuration. */
-  public gridOptions: GridOptions = {
+  public gridOptions = {
     defaultColDef: {
       sortable: true,
       filter: true,
+      floatingFilter: true,
       flex: 1,
+      enableValue: true,
+      enableRowGroup: true,
     },
-    rowModelType: 'serverSide',
     sideBar: this.sideBar,
     paginationPageSize: this.limit,
     overlayLoadingTemplate:
@@ -88,109 +107,110 @@ export class DataTableComponent implements OnDestroy {
       '<span class="ag-overlay-loading-center">No rows to show</span>',
   };
 
-  /** Grid API. */
-  gridApi!: GridApi;
+  /**
+   * Loads data for the given page.
+   * @param {number} page - The page number to load data for.
+   */
+  loadDatas(page: number): void {
+    this.loading = true;
+    this.updateItemIndices();
+    this.gridApi.showLoadingOverlay();
+    this.subscription.push(
+      this.dataTableService
+        .getTableData(page, this.paginationPageSize)
+        .pipe(
+          finalize(() => {
+            this.gridApi.hideOverlay();
+          })
+        )
+        .subscribe({
+          next: (res) => {
+            res.forEach((el) => {
+              el['id'] = Number(el.id) + 1;
+            });
+            this.gridApi.setGridOption('rowData', res);
+            this.loading = false;
+          },
+          error: (err) => {
+            console.error('Error fetching data', err);
+            this.loading = false;
+          },
+        })
+    );
+  }
 
   /**
    * Event handler for when the grid is ready.
    * @param params The event parameters.
    */
-  onGridReady(params: GridReadyEvent): void {
+  onGridReady(params: any): void {
     this.gridApi = params.api;
     this.params = params;
     this.gridApi.closeToolPanel();
-    this.gridApi.setHeaderHeight(60);
     this.gridApi.setGridOption;
-    const dataSource: IServerSideDatasource = {
-      getRows: (getRowParams) => {
-        this.gridApi.showLoadingOverlay();
-        this.subscription.push(
-          this.dataTableService
-            .getTableData(
-              this.gridApi.paginationGetCurrentPage() + 1,
-              this.gridApi.paginationGetPageSize()
-            )
-            .pipe(
-              map((val) => {
-                if (val.length === 0) {
-                  params.api.showNoRowsOverlay();
-                } else {
-                  params.api.hideOverlay();
-                }
-
-                return val;
-              })
-            )
-            .subscribe({
-              next: (res) => {
-                // const filteredData = this.filterDataByAuthor(
-                //   res,
-                //   getRowParams.request.filterModel?.['author']?.filter
-                // ); Call filtering function
-
-                this.updateRows(getRowParams, res); // Update grid with filtered data
-              },
-            })
-        );
-      },
-    };
-    params.api.setGridOption('serverSideDatasource', dataSource);
+    this.loadDatas(this.currentPage);
   }
 
-  /**
-   * Updates the grid with new row data.
-   * @param getRowParams The parameters for getting rows.
-   * @param val The new row data.
-   */
-  private updateRows(
-    getRowParams: IServerSideGetRowsParams,
-    response: IApiRes[]
-  ) {
-    getRowParams.success({
-      rowData: response,
-      rowCount: this.totalCount,
-    });
-  }
-
-  /**
-   * Filters the data by author name.
-   * @param data The data to filter.
-   * @param authorFilter The filter string for the author.
-   * @returns The filtered data.
-   */
-  filterDataByAuthor(data: IApiRes[], authorFilter: string): IApiRes[] {
-    if (!authorFilter) {
-      return data; // No filter applied, return all data
-    }
-
-    return data.filter((item) =>
-      item.author?.toLowerCase().includes(authorFilter.toLowerCase())
-    );
-  }
+  /** Column definition for the ID field. */
+  colDefId = {
+    headerName: '#ID',
+    field: 'id',
+    minWidth: 100,
+    filter: 'agTextColumnFilter',
+    resizable: false,
+    headerClass: 'fixed-size-header',
+  };
 
   /** Column definition for the author name. */
   colDefName = {
     headerName: 'Author Name',
     field: 'author',
-    minWidth: 250,
+    minWidth: 200,
     filter: 'agTextColumnFilter',
     resizable: false,
     headerClass: 'fixed-size-header',
-    filterParams: { suppressMatchAllPhrase: true },
   };
 
-  /** Column definition for the image. */
+  /** Column definition for the width field. */
+  colDefWidth = {
+    headerName: 'Width(px)',
+    field: 'width',
+    minWidth: 200,
+    filter: 'agTextColumnFilter',
+    resizable: false,
+    headerClass: 'fixed-size-header',
+  };
+
+  /** Column definition for the height field. */
+  colDefHeight = {
+    headerName: 'Heigth(px)',
+    field: 'height',
+    minWidth: 200,
+    filter: 'agTextColumnFilter',
+    resizable: false,
+    headerClass: 'fixed-size-header',
+  };
+
+  /** Column definition for the image field. */
   colDefImage = {
     headerName: 'Image',
     field: 'download_url',
-    minWidth: 250,
+    minWidth: 200,
     resizable: false,
     headerClass: 'fixed-size-header',
     cellRenderer: ImageRenderer,
   };
 
-  // Column Definitions: Defines the columns to be displayed.
-  colDefs: ColDef[] = [this.colDefName, this.colDefImage];
+  /** Array of column definitions. */
+  colDefs = [
+    this.colDefId,
+    this.colDefName,
+    this.colDefWidth,
+    this.colDefHeight,
+    this.colDefImage,
+  ];
+
+  /** Column definition for the author name. */
 
   /**
    * Event handler for changing the page size of the grid.
@@ -198,7 +218,56 @@ export class DataTableComponent implements OnDestroy {
    */
   onPageSizeChanged(event: Event) {
     const eventValue = event.target as HTMLInputElement;
+    this.paginationPageSize = Number(eventValue.value);
     this.gridApi?.setGridOption('paginationPageSize', Number(eventValue.value));
+    this.totalPages = Math.ceil(this.totalDataCount / this.paginationPageSize);
+  }
+
+  /**
+   * Loads the next page of data.
+   */
+  onNextPage(): void {
+    if (this.currentPage * this.paginationPageSize < this.totalDataCount) {
+      this.currentPage++;
+      this.loadDatas(this.currentPage);
+    }
+  }
+
+  /**
+   * Loads the previous page of data.
+   */
+  onPreviousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.loadDatas(this.currentPage);
+    }
+  }
+
+  /**
+   * Checks if the next page button should be disabled.
+   * @returns {boolean} - True if the next page button should be disabled, false otherwise.
+   */
+  isNextPageDisabled(): boolean {
+    return this.currentPage * this.paginationPageSize >= this.totalDataCount;
+  }
+
+  /**
+   * Checks if the previous page button should be disabled.
+   * @returns {boolean} - True if the previous page button should be disabled, false otherwise.
+   */
+  isPreviousPageDisabled(): boolean {
+    return this.currentPage <= 1;
+  }
+
+  /**
+   * Updates the start and end indices for the current page.
+   */
+  updateItemIndices(): void {
+    this.startItemIndex = (this.currentPage - 1) * this.paginationPageSize + 1;
+    this.endItemIndex = Math.min(
+      this.currentPage * this.paginationPageSize,
+      this.totalDataCount
+    );
   }
 
   /**
