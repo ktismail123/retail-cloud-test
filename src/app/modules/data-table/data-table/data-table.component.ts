@@ -1,10 +1,11 @@
 import { Component, inject } from '@angular/core';
 import {
+  ColDef,
   GridApi,
-  GridOptions,
   GridReadyEvent,
+  GridOptions,
   SideBarDef,
-} from 'ag-grid-enterprise';
+} from 'ag-grid-community';
 import { finalize, Subscription } from 'rxjs';
 import { DataTableService } from 'src/app/core/service/data-table/data-table.service';
 import { ImageRenderer } from '../data-table/dt-image-renderer.component';
@@ -90,7 +91,7 @@ export class DataTableComponent {
   }
 
   /** Grid options configuration. */
-  public gridOptions = {
+  public gridOptions: GridOptions = {
     defaultColDef: {
       sortable: true,
       filter: true,
@@ -101,10 +102,12 @@ export class DataTableComponent {
     },
     sideBar: this.sideBar,
     paginationPageSize: this.limit,
+    suppressNoRowsOverlay: false,
     overlayLoadingTemplate:
       '<span class="ag-overlay-loading-center">Loading...</span>',
     overlayNoRowsTemplate:
       '<span class="ag-overlay-loading-center">No rows to show</span>',
+    onFilterChanged: this.onFilterChanged.bind(this),
   };
 
   /**
@@ -121,10 +124,15 @@ export class DataTableComponent {
         .pipe(
           finalize(() => {
             this.gridApi.hideOverlay();
+            this.loading = false;
           })
         )
         .subscribe({
           next: (res) => {
+            if (res?.length === 0) {
+              this.gridApi.showNoRowsOverlay();
+              return;
+            }
             res.forEach((el) => {
               el['id'] = Number(el.id) + 1;
             });
@@ -143,72 +151,13 @@ export class DataTableComponent {
    * Event handler for when the grid is ready.
    * @param params The event parameters.
    */
-  onGridReady(params: any): void {
+  onGridReady(params: GridReadyEvent): void {
     this.gridApi = params.api;
     this.params = params;
     this.gridApi.closeToolPanel();
     this.gridApi.setGridOption;
     this.loadDatas(this.currentPage);
   }
-
-  /** Column definition for the ID field. */
-  colDefId = {
-    headerName: '#ID',
-    field: 'id',
-    minWidth: 100,
-    filter: 'agTextColumnFilter',
-    resizable: false,
-    headerClass: 'fixed-size-header',
-  };
-
-  /** Column definition for the author name. */
-  colDefName = {
-    headerName: 'Author Name',
-    field: 'author',
-    minWidth: 200,
-    filter: 'agTextColumnFilter',
-    resizable: false,
-    headerClass: 'fixed-size-header',
-  };
-
-  /** Column definition for the width field. */
-  colDefWidth = {
-    headerName: 'Width(px)',
-    field: 'width',
-    minWidth: 200,
-    filter: 'agTextColumnFilter',
-    resizable: false,
-    headerClass: 'fixed-size-header',
-  };
-
-  /** Column definition for the height field. */
-  colDefHeight = {
-    headerName: 'Heigth(px)',
-    field: 'height',
-    minWidth: 200,
-    filter: 'agTextColumnFilter',
-    resizable: false,
-    headerClass: 'fixed-size-header',
-  };
-
-  /** Column definition for the image field. */
-  colDefImage = {
-    headerName: 'Image',
-    field: 'download_url',
-    minWidth: 200,
-    resizable: false,
-    headerClass: 'fixed-size-header',
-    cellRenderer: ImageRenderer,
-  };
-
-  /** Array of column definitions. */
-  colDefs = [
-    this.colDefId,
-    this.colDefName,
-    this.colDefWidth,
-    this.colDefHeight,
-    this.colDefImage,
-  ];
 
   /** Column definition for the author name. */
 
@@ -269,6 +218,82 @@ export class DataTableComponent {
       this.totalDataCount
     );
   }
+
+  /**
+   * Handles the filter changed event.
+   * This method is triggered whenever a filter is changed in the grid.
+   * It checks the number of displayed rows and shows or hides the "No Rows" overlay accordingly.
+   *
+   */
+  onFilterChanged(): void {
+    const rowCount = this.gridApi.getDisplayedRowCount();
+    if (rowCount === 0) {
+      this.gridApi.showNoRowsOverlay();
+    } else {
+      this.gridApi.hideOverlay();
+    }
+  }
+
+  /** Column definition for the ID field. */
+  colDefId: ColDef = {
+    headerName: '#ID',
+    field: 'id',
+    minWidth: 100,
+    filter: 'agNumberColumnFilter',
+    resizable: false,
+    headerClass: 'fixed-size-header',
+    lockPosition: true,
+    lockVisible: true,
+  };
+
+  /** Column definition for the author name. */
+  colDefName: ColDef = {
+    headerName: 'Author Name',
+    field: 'author',
+    minWidth: 200,
+    filter: 'agTextColumnFilter',
+    resizable: false,
+    headerClass: 'fixed-size-header',
+  };
+
+  /** Column definition for the width field. */
+  colDefWidth: ColDef = {
+    headerName: 'Width(px)',
+    field: 'width',
+    minWidth: 200,
+    filter: 'agNumberColumnFilter',
+    resizable: false,
+    headerClass: 'fixed-size-header',
+  };
+
+  /** Column definition for the height field. */
+  colDefHeight: ColDef = {
+    headerName: 'Heigth(px)',
+    field: 'height',
+    minWidth: 200,
+    filter: 'agNumberColumnFilter',
+    resizable: false,
+    headerClass: 'fixed-size-header',
+  };
+
+  /** Column definition for the image field. */
+  colDefImage: ColDef = {
+    headerName: 'Image',
+    field: 'download_url',
+    minWidth: 200,
+    resizable: false,
+    headerClass: 'fixed-size-header',
+    cellRenderer: ImageRenderer,
+  };
+
+  /** Array of column definitions. */
+  colDefs: ColDef[] = [
+    this.colDefId,
+    this.colDefName,
+    this.colDefWidth,
+    this.colDefHeight,
+    this.colDefImage,
+  ];
 
   /**
    * Angular lifecycle hook that is called when the directive is destroyed.
