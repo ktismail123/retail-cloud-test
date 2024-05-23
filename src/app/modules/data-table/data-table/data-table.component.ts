@@ -98,7 +98,7 @@ export class DataTableComponent {
       floatingFilter: true,
       flex: 1,
       enableValue: true,
-      enableRowGroup: true,
+      enableRowGroup: true,  
     },
     sideBar: this.sideBar,
     paginationPageSize: this.limit,
